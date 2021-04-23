@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.13)
+project(ppsspp-gen-index)
+set(CMAKE_CXX_STANDARD 14)
+set(SOURCE_FILES ppsspp-gen-index.cpp BlockDevices.cpp)
+add_executable(ppsspp-gen-index ${SOURCE_FILES})
