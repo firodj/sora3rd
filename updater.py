@@ -165,7 +165,7 @@ if os.path.isfile(filelisttxt):  #Original file list
     #Sort "file lines" (not folder lines) by LBA
     filelines = sorted([l for l in lines if l.IsFolder == False], key= lambda x: x.LBA)    
     #Read original filelist file
-    filelistheader = ''                 #Read header from file list
+    filelistheader = []                 #Read header from file list
     filelistother = []
     flag = True                         #For marking the header
     pathlist = [x.PathName for x in filelines]   
@@ -178,7 +178,7 @@ if os.path.isfile(filelisttxt):  #Original file list
                 if pathname[17:] not in pathlist:    #Removes '\PSP_GAME\USRDIR\' text
                     filelistlines.append(FileListLine(int(lba), pathname[17:]))                    
             else:
-                filelistheader += line  #Add line to header
+                filelistheader.append(FileListLine(int(lba), pathname[1:])) #Add line to header
                 
     #Integrate and sort lines by LBA
     filelines = sorted(filelines + filelistlines, key= lambda x: x.LBA)
@@ -211,13 +211,30 @@ if os.path.isfile(filelisttxt):  #Original file list
             
     ensure_dir(dirname)                 #Create directory if it doesn't exist
     with open(dirname + '\\filelist.txt','w') as f: #Open new file list file for writing
-        f.write(filelistheader)                     #Write the header
+        #Write the header
+        for line in filelistheader:
+            f.write('{:0>7d}'.format(line.LBA))     #The LBA, zero-padded to 7 digits
+            f.write(' , \\')                          #Separator
+            f.write(line.PathName + '\n')           #Path and file name
         #File lines (not folder lines) sorted by LBA
+        i=0
         for line in sorted([l for l in lines if l.IsFolder == False] + filelistlines, key= lambda x: x.LBA):
+            if i > 0:
+                f.write('\n')
             f.write('{:0>7d}'.format(line.LBA))     #The LBA, zero-padded to 7 digits
             f.write(' , \\PSP_GAME\\USRDIR\\')      #Separator
-            f.write(line.PathName + '\n') #Path and file name
+            f.write(line.PathName) #Path and file name
+            i += 1
     print('Updated {} entries in data.lst for additional LBAs.'.format(LBAcount))
+
+    with open(dirname + '\\.ppsspp-index.lst','w') as f: #Open new file list file for writing
+        allfiles = [(l.LBA, 'PSP_GAME/USRDIR/' + l.PathName.replace('\\', '/')) for l in ([l for l in lines if l.IsFolder == False] + filelistlines)]
+        allfiles += [(l.LBA, l.PathName.replace('\\', '/')) for l in filelistheader]
+        allfiles = sorted(allfiles , key= lambda l: l[1])
+        for l in allfiles:
+            f.write('0x{:0>8x}'.format(l[0]))     #The LBA, zero-padded to 7 digits            
+            f.write(' ' + l[1] + '\n')           #Path and file name
+
 else:
     print('filelist.txt not found in %s. LBAs not updated.' % (filelisttxt,))
     
