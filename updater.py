@@ -230,7 +230,7 @@ if os.path.isfile(filelisttxt):  #Original file list
     with open(dirname + os.sep + '.ppsspp-index.lst','w') as f: #Open new file list file for writing
         allfiles = [(l.LBA, 'PSP_GAME/USRDIR/' + l.PathName.replace('\\', '/')) for l in ([l for l in lines if l.IsFolder == False] + filelistlines)]
         allfiles += [(l.LBA, l.PathName.replace('\\', '/')) for l in filelistheader]
-        allfiles = sorted(allfiles , key= lambda l: l[1])
+        allfiles = sorted(allfiles, key= lambda l: l[1])
         for l in allfiles:
             f.write('0x{:0>8x}'.format(l[0]))     #The LBA, zero-padded to 7 digits
             f.write(' ' + l[1] + '\n')           #Path and file name
