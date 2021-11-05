@@ -8,3 +8,10 @@
 
 **disc** -> the disc content
 
+# PPSSPP Works
+
+__KernelSetupRootThread
+
+* allocation Stack and set SP regsiter
+
+
