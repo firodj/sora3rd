@@ -44,21 +44,30 @@ for i in range(dataCount):
 	is_folder = False
 	is_exists = False
 
+	if len(paths) > 0:
+		for j in range(len(paths)):
+			paths[j]['size'] -= 1
+
 	if ext == 0:
 		is_folder = True
 		paths.append({'name': name, 'size': datalistline.size})
 	else:
 		name += "." + ExtDict[ext]
+
 		if len(paths) > 0:
 			names = map(lambda e: e['name'], paths)
 			name = os.path.join(*names) + os.path.sep + name
-			paths[-1]['size'] -= 1
-			if paths[-1]['size'] == 0:
+
+			while len(paths) > 0:
+				if paths[-1]['size'] != 0:
+					break
 				paths.pop()
 
-		# fullname = os.path.join(basedir, name)
+		fullname = os.path.join(basedir, name)
+		is_exists = os.path.exists(fullname)
 
 	print(i, name, is_folder, datalistline.size, lba, is_exists)
 
+print(paths)
 print(f_lst.tell(), fileSize)
 f_lst.close()
