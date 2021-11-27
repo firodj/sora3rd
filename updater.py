@@ -55,15 +55,15 @@ def replacestr(origstr,replacestr,startpos,replacelen):
 #Initialize extension dictionary
 #Extension table is found in data.lst at the beginning
 #Any number of extensions up to 3 characters long separated by nulls
-ExtDict = {0: ""}                
-with open(srcdatalst,'rb') as f:    
+ExtDict = {0: ""}
+with open(srcdatalst,'rb') as f:
     size = struct.unpack('<I',f.read(4))[0]
     print('data.lst size=%d' % (size,))
     i = 1
     while True:
-        ext = f.read(4)        
+        ext = f.read(4)
         if ext == b'\x00'*4:
-            break     
+            break
         ExtDict[i] = ext.split(b'\x00')[0].decode(UTF8)
         i += 1
 
@@ -73,7 +73,7 @@ class DataListLine:
         self.Addr = pos
         origpos = f.tell()
         f.seek(pos)                     #Move to start of line
-        self.Name = f.read(8).split(b'\x00')[0].decode(UTF8) #Get the name, null end string        
+        self.Name = f.read(8).split(b'\x00')[0].decode(UTF8) #Get the name, null end string
         self.Size = struct.unpack('<I',f.read(4))[0]    #Get the file size
         self.LBA = struct.unpack('<I',f.read(3) + b'\x00')[0]    #Get the LBA
         self.ExtByte = int.from_bytes(f.read(1), byteorder='big')    #Get the extension byte
@@ -88,7 +88,7 @@ class DataListLine:
         return name + b'\x00'*(8-len(name)) + \
                struct.pack('<I',self.Size) + \
                struct.pack('<I',self.LBA)[:3] + \
-               (self.ExtByte).to_bytes(1, byteorder='big') 
+               (self.ExtByte).to_bytes(1, byteorder='big')
     def __repr__(self):
         return 'DataListLine(0x%x %s %d)' % (self.LBA, self.PathName, self.Size)
 
@@ -98,8 +98,8 @@ class FileListLine:                     #For files in the UMD but not present in
         self.PathName = PathName
         try:
             self.Size = os.path.getsize(PathName)
-        except WindowsError:
-            self.Size = 0    
+        except:
+            self.Size = 0
     def __repr__(self):
         return 'FileListLine(0x%x, %s)' % (self.LBA, self.PathName,)
 
@@ -109,7 +109,7 @@ updates = 0         #Keep track of # of updates to data.lst sizes
 updatelist = []     #Keep track of filenames whose size was updated
 #Names and counts is a little more complicated
 #When the program gets to a folder entry, it pushes the name of the folder onto
-#the name stack (to capture path name information) and pushes the number of 
+#the name stack (to capture path name information) and pushes the number of
 #files + folders in that folder (incl. subfolders) onto the counts stack.
 #Each time the program processes a line, it subtracts 1 from each number on the
 #counts stack. After this, new values are pushed onto the stack if the current
@@ -135,9 +135,9 @@ with open(srcdatalst,'rb') as f:
         if line.IsFolder:                       #If current entry is a folder
             counts.append(line.Size)            #push new values to the count
             names.append(line.Name)             #and name stacks
-        else:                                   #Current entry is a file            
+        else:                                   #Current entry is a file
             if len(names) > 0:                  #Form the file path
-                line.PathName = '\\'.join(names) + '\\'
+                line.PathName = os.sep.join(names) + os.sep
             else:
                 line.PathName = ''
             line.PathName += line.FileName
@@ -148,8 +148,8 @@ with open(srcdatalst,'rb') as f:
                 if fileSize != line.Size:  #Update required
                     updates += 1                            #Increment counter
                     updatelist.append(line.PathName)        #Add to list of updated entries
-                    line.Size = fileSize   #Update object with new size                    
-            except WindowsError:                            #File doesn't exist
+                    line.Size = fileSize   #Update object with new size
+            except:                            #File doesn't exist
                 missingfiles.append(line.PathName)          #Update list of missing files
         #Has to be done in this order
         while len(counts) != 0:     #As long as the counts stack isn't empty
@@ -163,12 +163,12 @@ with open(srcdatalst,'rb') as f:
 #Updating LBAs portion of the program
 if os.path.isfile(filelisttxt):  #Original file list
     #Sort "file lines" (not folder lines) by LBA
-    filelines = sorted([l for l in lines if l.IsFolder == False], key= lambda x: x.LBA)    
+    filelines = sorted([l for l in lines if l.IsFolder == False], key= lambda x: x.LBA)
     #Read original filelist file
     filelistheader = []                 #Read header from file list
     filelistother = []
     flag = True                         #For marking the header
-    pathlist = [x.PathName for x in filelines]   
+    pathlist = [x.PathName for x in filelines]
     filelistlines = []                  #Container for file list line objects
     with open(filelisttxt) as f:
         for line in f:
@@ -176,10 +176,10 @@ if os.path.isfile(filelisttxt):  #Original file list
             if pathname[:17] == '\\PSP_GAME\\USRDIR\\':  #Determine if line is in data.lst or not
                 #If the line is not in data.lst, create FileListLine object for it
                 if pathname[17:] not in pathlist:    #Removes '\PSP_GAME\USRDIR\' text
-                    filelistlines.append(FileListLine(int(lba), pathname[17:]))                    
+                    filelistlines.append(FileListLine(int(lba), pathname[17:]))
             else:
                 filelistheader.append(FileListLine(int(lba), pathname[1:])) #Add line to header
-                
+
     #Integrate and sort lines by LBA
     filelines = sorted(filelines + filelistlines, key= lambda x: x.LBA)
     firstpass = True
@@ -208,9 +208,9 @@ if os.path.isfile(filelisttxt):  #Original file list
     ##        elif required_blocks < avail_blocks:
     ##            print 'Extra LBAs at position {}, {}.'.format(hex(filelines[i-1].Addr),filelines[i-1].FileName)
     ##            print 'Required blocks {}, available blocks {}.'.format(required_blocks, avail_blocks)
-            
+
     ensure_dir(dirname)                 #Create directory if it doesn't exist
-    with open(dirname + '\\filelist.txt','w') as f: #Open new file list file for writing
+    with open(dirname + os.sep + 'filelist.txt','w') as f: #Open new file list file for writing
         #Write the header
         for line in filelistheader:
             f.write('{:0>7d}'.format(line.LBA))     #The LBA, zero-padded to 7 digits
@@ -227,22 +227,23 @@ if os.path.isfile(filelisttxt):  #Original file list
             i += 1
     print('Updated {} entries in data.lst for additional LBAs.'.format(LBAcount))
 
-    with open(dirname + '\\.ppsspp-index.lst','w') as f: #Open new file list file for writing
+    with open(dirname + os.sep + '.ppsspp-index.lst','w') as f: #Open new file list file for writing
         allfiles = [(l.LBA, 'PSP_GAME/USRDIR/' + l.PathName.replace('\\', '/')) for l in ([l for l in lines if l.IsFolder == False] + filelistlines)]
         allfiles += [(l.LBA, l.PathName.replace('\\', '/')) for l in filelistheader]
         allfiles = sorted(allfiles , key= lambda l: l[1])
         for l in allfiles:
-            f.write('0x{:0>8x}'.format(l[0]))     #The LBA, zero-padded to 7 digits            
+            f.write('0x{:0>8x}'.format(l[0]))     #The LBA, zero-padded to 7 digits
             f.write(' ' + l[1] + '\n')           #Path and file name
 
 else:
     print('filelist.txt not found in %s. LBAs not updated.' % (filelisttxt,))
-    
+
 ensure_dir(dirname)                 #Create directory if it doesn't exist
-with open(dirname + '\\data.lst','wb') as f:
+with open(dirname + os.sep + 'data.lst','wb') as f:
     f.write(datalstbase)            #Write first 0x410 of file
     for line in lines:              #Write data for each line
         f.write(line.binary())
 #User messages
 print('Updated {} entries in data.lst for file size.'.format(updates))
 print("There were {} missing files that couldn't be updated.".format(len(missingfiles)))
+print(missingfiles)
