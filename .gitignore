@@ -1,3 +1,6 @@
 /disc
 *.pyc
 
+.DS_Store
+.peru
+/external/**/build*

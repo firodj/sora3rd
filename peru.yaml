@@ -1,0 +1,5 @@
+imports:
+  virtfs: ./external/ppsspp-virtfs-tools
+
+git module virtfs:
+  url: https://github.com/unknownbrackets/ppsspp-virtfs-tools
