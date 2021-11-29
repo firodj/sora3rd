@@ -8,6 +8,8 @@
 
 **disc** -> the disc content
 
+start.dat -> `dat_read.py` (with `falcom_decompress_v2`)
+
 # PPSSPP Works
 
 __KernelSetupRootThread
@@ -24,6 +26,7 @@ sceIoLseekAsync
 sceIoReadAsync
 sceIoWaitAsyncCB
 
+For Opening file, Breakpoint at `VirtualDiscFileSystem::OpenFile`
 
 0. open data.lst
 1. disc0:/sce_lbn0e57b_size0x7a7800

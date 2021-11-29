@@ -34,6 +34,8 @@ print(f_lst.tell())
 
 paths = []
 
+print("i,name,is_folder,lba,is_exists")
+
 for i in range(dataCount):
 	DataListLine = namedtuple('DataListLine', 'name size lbaext')
 
@@ -66,7 +68,7 @@ for i in range(dataCount):
 		fullname = os.path.join(basedir, name)
 		is_exists = os.path.exists(fullname)
 
-	print(i, name, is_folder, datalistline.size, lba, is_exists)
+	print("%d,%s,%s,sce_lbn0%x_size0x%x,%s" % (i, name, is_folder, lba, datalistline.size, is_exists))
 
 print(paths)
 print(f_lst.tell(), fileSize)
