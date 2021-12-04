@@ -8,8 +8,6 @@
 
 **disc** -> the disc content
 
-start.dat -> `dat_read.py` (with `falcom_decompress_v2`)
-
 # PPSSPP Works
 
 __KernelSetupRootThread
@@ -50,3 +48,8 @@ For Opening file, Breakpoint at `VirtualDiscFileSystem::OpenFile`
   readSize	u32	2310960
   fileIndex	int	2434
   ffplay -i disc/PSP_GAME/USRDIR/data_3rd/bgm/ed6020.at3
+## File Format
+
+* bgm/*.at3 --> ffmpeg Audio: atrac3p, 44100 Hz, stereo, fltp, 128 kb/s
+* movie/*.pmf --> ffmpeg Video: h264 (Main), yuv420p(tv, progressive), 480x272 [SAR 1:1 DAR 30:17], 29.97 fps
+* start.dat, joutyu.dat --> `dat_read.py` (with `falcom_decompress_v2`)
