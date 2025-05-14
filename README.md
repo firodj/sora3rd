@@ -8,6 +8,10 @@
 
 **disc** -> the disc content
 
+start.dat -> `dat_read.py` (with `falcom_decompress_v2`)
+*.vag -> ffmpeg: adpcm_psx
+*.pmf -> ffmpeg: h264
+
 # PPSSPP Works
 
 __KernelSetupRootThread
@@ -27,6 +31,9 @@ sceIoWaitAsyncCB
 For Opening file, Breakpoint at `VirtualDiscFileSystem::OpenFile`
 
 0. open data.lst
+  pc	u32	0x089eee1c
+  r[29]/sp	u32	0x09fff490
+
 1. disc0:/sce_lbn0e57b_size0x7a7800
   size: 8026112
   sector: 58747
