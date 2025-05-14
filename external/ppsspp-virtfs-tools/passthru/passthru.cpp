@@ -43,7 +43,12 @@ EXPORT void Shutdown()
 EXPORT handle_t Open(const char *rootPath, const char *filename)
 {
 	std::string full = std::string(rootPath) + "/" + filename;
+
+#if _WIN32
 	handle_t handle = (handle_t) open(full.c_str(), O_RDONLY | O_BINARY);
+#else
+	handle_t handle = (handle_t) open(full.c_str(), O_RDONLY);
+#endif
 	LOG(handle, L_DEBUG, "Opened file");
 	return handle;
 }
